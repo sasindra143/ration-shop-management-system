@@ -66,7 +66,7 @@ router.get('/dashboard', protect, async (req, res) => {
       Transaction.countDocuments({ month: currentMonth, year: currentYear }),
       Transaction.aggregate([
         { $match: { month: currentMonth, year: currentYear } },
-        { $group: { _id: null, rice: { $sum: '$rice' }, soaps: { $sum: '$soaps' }, wheat: { $sum: '$wheat' }, idli: { $sum: '$idli' }, samiya: { $sum: '$samiya' }, surf: { $sum: '$surf' } } }
+        { $group: { _id: null, rice: { $sum: '$rice' }, bigSoap: { $sum: '$bigSoap' }, smallSoap: { $sum: '$smallSoap' }, wheat: { $sum: '$wheat' }, idli: { $sum: '$idli' }, samiya: { $sum: '$samiya' }, sugar: { $sum: '$sugar' }, surf: { $sum: '$surf' }, totalBill: { $sum: '$totalBill' } } }
       ]),
       Transaction.aggregate([
         {

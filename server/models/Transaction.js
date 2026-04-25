@@ -9,11 +9,14 @@ const TransactionSchema = new mongoose.Schema({
   year: { type: Number, required: true },
   shopNumber: { type: String, default: '0806015' },
   rice: { type: Number, default: 0 },
-  soaps: { type: Number, default: 0 },
+  bigSoap: { type: Number, default: 0 },
+  smallSoap: { type: Number, default: 0 },
   wheat: { type: Number, default: 0 },
   idli: { type: Number, default: 0 },
   samiya: { type: Number, default: 0 },
+  sugar: { type: Number, default: 0 },
   surf: { type: Number, default: 0 },
+  totalBill: { type: Number, default: 0 },
   enteredBy: { type: String },
   receiverName: { type: String },          // who physically collected
   receiverPhoto: { type: String },         // base64 photo of receiver

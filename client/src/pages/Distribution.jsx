@@ -162,7 +162,7 @@ export default function Distribution() {
   });
 
   const [form, setForm] = useState({
-    rice: '', soaps: '', wheat: '', idli: '', samiya: '', surf: ''
+    rice: '', bigSoap: '', smallSoap: '', wheat: '', idli: '', samiya: '', sugar: '', surf: ''
   });
 
   useEffect(() => {
@@ -220,10 +220,12 @@ export default function Distribution() {
         month: parseInt(month),
         year: parseInt(year),
         rice: Number(form.rice) || 0,
-        soaps: Number(form.soaps) || 0,
+        bigSoap: Number(form.bigSoap) || 0,
+        smallSoap: Number(form.smallSoap) || 0,
         wheat: Number(form.wheat) || 0,
         idli: Number(form.idli) || 0,
         samiya: Number(form.samiya) || 0,
+        sugar: Number(form.sugar) || 0,
         surf: Number(form.surf) || 0,
         receiverName: receiverName.trim(),
         receiverPhoto: photoBase64,
@@ -236,7 +238,7 @@ export default function Distribution() {
       setPhotoPreview(null);
       setPhotoBase64('');
       setReceiverName('');
-      setForm({ rice: '', soaps: '', wheat: '', idli: '', samiya: '', surf: '' });
+      setForm({ rice: '', bigSoap: '', smallSoap: '', wheat: '', idli: '', samiya: '', sugar: '', surf: '' });
       navigate('/distribution', { replace: true, state: null });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save entry');
@@ -249,13 +251,29 @@ export default function Distribution() {
     val === undefined ? 'bg-gray-700' : val < threshold ? 'bg-red-500' : val < threshold * 2 ? 'bg-yellow-500' : 'bg-green-500';
 
   const items = [
-    { label: 'Rice', key: 'rice', unit: 'kg', threshold: 500, color: 'text-white', icon: '🍚' },
-    { label: 'Soaps', key: 'soaps', unit: 'pcs', threshold: 100, color: 'text-blue-400', icon: '🧼' },
-    { label: 'Wheat', key: 'wheat', unit: 'kg', threshold: 50, color: 'text-yellow-400', icon: '🌾' },
-    { label: 'Idli Rava', key: 'idli', unit: 'kg', threshold: 20, color: 'text-gray-300', icon: '🍚' },
-    { label: 'Samiya', key: 'samiya', unit: 'kg', threshold: 20, color: 'text-cyan-400', icon: '🍜' },
-    { label: 'Surf', key: 'surf', unit: 'pkts', threshold: 50, color: 'text-green-400', icon: '🫧' },
+    { label: 'Rice', key: 'rice', unit: 'kg', threshold: 500, color: 'text-white', icon: '🍚', price: 0 },
+    { label: 'Big Soap', key: 'bigSoap', unit: 'pcs', threshold: 100, color: 'text-blue-400', icon: '🧼', price: 20 },
+    { label: 'Small Soap', key: 'smallSoap', unit: 'pcs', threshold: 100, color: 'text-blue-300', icon: '🧼', price: 10 },
+    { label: 'Wheat', key: 'wheat', unit: 'kg', threshold: 50, color: 'text-yellow-400', icon: '🌾', price: 50 },
+    { label: 'Idli Rava', key: 'idli', unit: 'kg', threshold: 20, color: 'text-gray-300', icon: '🍚', price: 50 },
+    { label: 'Samiya', key: 'samiya', unit: 'pkt', threshold: 20, color: 'text-cyan-400', icon: '🍜', price: 35 },
+    { label: 'Sugar', key: 'sugar', unit: 'kg', threshold: 20, color: 'text-pink-200', icon: '🧂', price: 'custom' },
+    { label: 'Surf', key: 'surf', unit: 'pkt', threshold: 50, color: 'text-green-400', icon: '🫧', price: 45 },
   ];
+
+  const calculateTotalBill = () => {
+    const s = Number(form.sugar) || 0;
+    const sugarCost = Math.floor(s / 2) * 35 + (s % 2) * 17;
+    return (
+      ((Number(form.bigSoap) || 0) * 20) +
+      ((Number(form.smallSoap) || 0) * 10) +
+      ((Number(form.wheat) || 0) * 50) +
+      ((Number(form.idli) || 0) * 50) +
+      ((Number(form.samiya) || 0) * 35) +
+      ((Number(form.surf) || 0) * 45) +
+      sugarCost
+    );
+  };
 
   const formatMonthYear = (ds) => {
     const [y, m] = ds.split('-');
@@ -305,14 +323,14 @@ export default function Distribution() {
 
         {/* Stock Preview */}
         {stock && (
-          <div className="card !p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Package size={14} className="text-blue-400" />
+          <div className="card !p-3 overflow-x-auto">
+            <div className="flex items-center gap-2 mb-2 min-w-max">
+              <Package size={14} className="text-blue-400 shrink-0" />
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Available Stock · {formatMonthYear(selectedDate)}</span>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div className="flex gap-2 min-w-max pb-1">
               {items.map(({ label, key, unit, threshold, icon }) => (
-                <div key={key} className={`rounded-xl p-2 text-center ${(stock[key]||0) < threshold ? 'bg-red-900/20 border border-red-900/40' : 'bg-gray-800'}`}>
+                <div key={key} className={`rounded-xl p-2 text-center w-20 shrink-0 ${(stock[key]||0) < threshold ? 'bg-red-900/20 border border-red-900/40' : 'bg-gray-800'}`}>
                   <span className="text-base">{icon}</span>
                   <p className="text-xs text-gray-400 mt-0.5">{label}</p>
                   <p className={`text-sm font-bold ${(stock[key]||0) < threshold ? 'text-red-400' : 'text-white'}`}>
@@ -430,34 +448,51 @@ export default function Distribution() {
             <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider border-t border-gray-800 pt-4">
               Step 3 — Commodity Quantities
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {items.map(({ key, label, unit, color, icon }) => (
-                <div key={key} className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50">
-                  <label className={`flex items-center gap-1.5 text-xs font-semibold mb-2 ${color}`}>
-                    <span>{icon}</span> {label}
-                    <span className="text-gray-600 font-normal">({unit})</span>
-                  </label>
-                  <input
-                    type="number" step="0.1" min="0"
-                    className="input w-full text-center text-lg font-bold py-2"
-                    value={form[key]}
-                    onChange={e => setForm({ ...form, [key]: e.target.value })}
-                    placeholder="0"
-                    inputMode="decimal"
-                  />
-                  {stock && form[key] && Number(form[key]) > (stock[key] || 0) && (
-                    <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                      <AlertTriangle size={10} /> Exceeds stock ({stock[key] || 0})
-                    </p>
-                  )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {items.map(({ key, label, unit, color, icon, price }) => (
+                <div key={key} className="bg-gray-800/60 rounded-xl p-3 border border-gray-700/50 flex flex-col justify-between">
+                  <div>
+                    <label className={`flex items-center gap-1.5 text-xs font-semibold mb-1 ${color}`}>
+                      <span>{icon}</span> {label}
+                    </label>
+                    <span className="text-[11px] font-medium bg-gray-900/80 px-2 py-0.5 rounded text-gray-400 inline-block mb-2">
+                      {price === 'custom' ? '₹17/1 | ₹35/2' : price > 0 ? `₹${price}/${unit}` : 'Free'}
+                    </span>
+                  </div>
+                  <div>
+                    <input
+                      type="number" step="0.1" min="0"
+                      className="input w-full text-center text-lg font-bold py-2"
+                      value={form[key]}
+                      onChange={e => setForm({ ...form, [key]: e.target.value })}
+                      placeholder="0"
+                      inputMode="decimal"
+                    />
+                    {stock && form[key] && Number(form[key]) > (stock[key] || 0) && (
+                      <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                        <AlertTriangle size={10} /> Exceeds stock ({stock[key] || 0})
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
+            </div>
+
+            {/* Total Bill Box */}
+            <div className="bg-green-900/20 border border-green-500/30 rounded-2xl p-4 flex items-center justify-between mt-6">
+              <div>
+                <p className="text-gray-400 text-sm font-medium">Total Bill amount</p>
+                <p className="text-[10px] text-green-400/70 mt-0.5">Calculated automatically</p>
+              </div>
+              <div className="text-3xl font-bold text-green-400">
+                ₹{calculateTotalBill()}
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={submitting || !cardDetails}
-              className="btn-primary w-full py-4 flex justify-center items-center gap-2 text-base font-semibold rounded-2xl disabled:opacity-40 active:scale-[0.98] transition-all"
+              className="btn-primary w-full py-4 flex justify-center items-center gap-2 text-base font-semibold rounded-2xl disabled:opacity-40 active:scale-[0.98] transition-all mt-4"
             >
               <Save size={20} />
               {submitting ? 'Saving...' : 'Submit Entry & Deduct Stock'}

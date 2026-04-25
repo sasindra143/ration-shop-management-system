@@ -12,6 +12,7 @@ export default function Reports() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const parsedMonth = monthVal ? parseInt(monthVal.split('-')[1]) : now.getMonth() + 1;
   const parsedYear  = monthVal ? parseInt(monthVal.split('-')[0]) : now.getFullYear();
@@ -46,18 +47,21 @@ export default function Reports() {
     doc.text(`Shop: 0806015 | Village: Sunkesula | Period: ${monthName} ${parsedYear}`, 14, 28);
     doc.text(`Total Families Served: ${data.summary?.totalCards || 0}`, 14, 36);
 
-    const tableColumn = ['Date', 'Card No', 'Head of Family', 'Units', 'Rice(kg)', 'Soaps(pcs)', 'Wheat(kg)', 'Idli(kg)', 'Samiya(kg)', 'Surf(pkts)', 'Receiver'];
+    const tableColumn = ['Date', 'Card No', 'Head of Family', 'Units', 'Rice', 'Big Soap', 'Small Soap', 'Wheat', 'Idli', 'Samiya', 'Sugar', 'Surf', 'Total Bill', 'Receiver'];
     const tableRows = data.details.map(t => [
       new Date(t.date).toLocaleDateString('en-IN'),
       t.cardNumber,
       t.headOfFamily,
       t.familyMembers,
       t.rice || 0,
-      t.soaps || 0,
+      t.bigSoap || 0,
+      t.smallSoap || 0,
       t.wheat || 0,
       t.idli || 0,
       t.samiya || 0,
+      t.sugar || 0,
       t.surf || 0,
+      t.totalBill || 0,
       t.receiverName || '-',
     ]);
     doc.autoTable({
@@ -73,11 +77,14 @@ export default function Reports() {
     doc.setFontSize(10);
     doc.text('Monthly Totals:', 14, fy);
     doc.text(`Rice: ${data.summary?.totalRice || 0} kg`, 14, fy + 8);
-    doc.text(`Soaps: ${data.summary?.totalSoaps || 0} pcs`, 60, fy + 8);
-    doc.text(`Wheat: ${data.summary?.totalWheat || 0} kg`, 105, fy + 8);
-    doc.text(`Idli: ${data.summary?.totalIdli || 0} kg`, 145, fy + 8);
-    doc.text(`Samiya: ${data.summary?.totalSamiya || 0} kg`, 190, fy + 8);
-    doc.text(`Surf: ${data.summary?.totalSurf || 0} pkts`, 235, fy + 8);
+    doc.text(`Big Soap: ${data.summary?.totalBigSoap || 0} pcs`, 50, fy + 8);
+    doc.text(`Small Soap: ${data.summary?.totalSmallSoap || 0} pcs`, 95, fy + 8);
+    doc.text(`Wheat: ${data.summary?.totalWheat || 0} kg`, 145, fy + 8);
+    doc.text(`Idli: ${data.summary?.totalIdli || 0} kg`, 185, fy + 8);
+    doc.text(`Samiya: ${data.summary?.totalSamiya || 0} pkt`, 225, fy + 8);
+    doc.text(`Sugar: ${data.summary?.totalSugar || 0} kg`, 14, fy + 16);
+    doc.text(`Surf: ${data.summary?.totalSurf || 0} pkt`, 50, fy + 16);
+    doc.text(`Total Collection: Rs. ${data.summary?.totalBill || 0}`, 95, fy + 16);
     doc.save(`Ration_Report_${monthName}_${parsedYear}.pdf`);
   };
 
@@ -155,11 +162,14 @@ export default function Reports() {
               {[
                 { label: 'Families', value: data.summary.totalCards, unit: '' },
                 { label: 'Rice', value: data.summary.totalRice, unit: 'kg' },
-                { label: 'Soaps', value: data.summary.totalSoaps, unit: 'pcs' },
+                { label: 'Big Soap', value: data.summary.totalBigSoap, unit: 'pcs' },
+                { label: 'Small Soap', value: data.summary.totalSmallSoap, unit: 'pcs' },
                 { label: 'Wheat', value: data.summary.totalWheat, unit: 'kg' },
                 { label: 'Idli Rava', value: data.summary.totalIdli, unit: 'kg' },
-                { label: 'Samiya', value: data.summary.totalSamiya, unit: 'kg' },
+                { label: 'Samiya', value: data.summary.totalSamiya, unit: 'pkt' },
+                { label: 'Sugar', value: data.summary.totalSugar, unit: 'kg' },
                 { label: 'Surf', value: data.summary.totalSurf, unit: 'pkts' },
+                { label: 'Collection', value: data.summary.totalBill, unit: '₹' },
               ].map(({ label, value, unit }) => (
                 <div key={label} className="bg-gray-800 rounded-xl p-3 border border-gray-700">
                   <span className="block text-xs text-gray-400 mb-1">{label}</span>
@@ -171,6 +181,22 @@ export default function Reports() {
             </div>
           )}
 
+          {/* Search Bar for Table */}
+          <div className="relative max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              className="input w-full pl-10"
+              placeholder="Search by Card Number or Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           {/* Table — scrollable on mobile */}
           <div className="table-wrap">
             <table className="table min-w-[600px]">
@@ -181,12 +207,18 @@ export default function Reports() {
                   <th>Head of Family</th>
                   <th>Units</th>
                   <th>Items Distributed</th>
+                  <th>Bill</th>
                   <th>Receiver</th>
                   <th>Photo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {data.details.map(t => (
+                {data.details
+                  .filter(t => 
+                    (t.cardNumber && t.cardNumber.includes(searchTerm)) || 
+                    (t.headOfFamily && t.headOfFamily.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map(t => (
                   <tr key={t._id}>
                     <td className="whitespace-nowrap text-xs">
                       {new Date(t.date).toLocaleDateString('en-IN')}
@@ -194,14 +226,17 @@ export default function Reports() {
                     <td className="font-mono text-xs">{t.cardNumber}</td>
                     <td className="font-medium text-white text-sm">{t.headOfFamily}</td>
                     <td className="text-center">{t.familyMembers}</td>
-                    <td className="text-xs text-gray-400 space-x-1">
-                      {t.rice > 0 && <span className="text-white">R:{t.rice}</span>}
-                      {t.soaps > 0 && <span className="text-blue-400">So:{t.soaps}</span>}
-                      {t.wheat > 0 && <span className="text-yellow-400">W:{t.wheat}</span>}
-                      {t.idli > 0 && <span className="text-gray-300">I:{t.idli}</span>}
-                      {t.samiya > 0 && <span className="text-cyan-400">Sa:{t.samiya}</span>}
-                      {t.surf > 0 && <span className="text-green-400">Su:{t.surf}</span>}
+                    <td className="text-[10px] text-gray-400 space-x-1.5 flex flex-wrap max-w-xs">
+                      {t.rice > 0 && <span className="text-white">Rice:{t.rice}</span>}
+                      {t.bigSoap > 0 && <span className="text-blue-400">B.Soap:{t.bigSoap}</span>}
+                      {t.smallSoap > 0 && <span className="text-blue-300">S.Soap:{t.smallSoap}</span>}
+                      {t.wheat > 0 && <span className="text-yellow-400">Wheat:{t.wheat}</span>}
+                      {t.idli > 0 && <span className="text-gray-300">Idli:{t.idli}</span>}
+                      {t.samiya > 0 && <span className="text-cyan-400">Samiya:{t.samiya}</span>}
+                      {t.sugar > 0 && <span className="text-pink-200">Sugar:{t.sugar}</span>}
+                      {t.surf > 0 && <span className="text-green-400">Surf:{t.surf}</span>}
                     </td>
+                    <td className="font-bold text-green-400">₹{t.totalBill || 0}</td>
                     <td className="text-sm text-gray-300">{t.receiverName || '-'}</td>
                     <td>
                       {t.receiverPhoto ? (

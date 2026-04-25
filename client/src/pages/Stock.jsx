@@ -13,7 +13,7 @@ export default function Stock() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   });
 
-  const [addForm, setAddForm] = useState({ rice: '', soaps: '', wheat: '', idli: '', samiya: '', surf: '' });
+  const [addForm, setAddForm] = useState({ rice: '', bigSoap: '', smallSoap: '', wheat: '', idli: '', samiya: '', sugar: '', surf: '' });
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -45,15 +45,17 @@ export default function Stock() {
         month: parseInt(month),
         year: parseInt(year),
         rice: Number(addForm.rice) || 0,
-        soaps: Number(addForm.soaps) || 0,
+        bigSoap: Number(addForm.bigSoap) || 0,
+        smallSoap: Number(addForm.smallSoap) || 0,
         wheat: Number(addForm.wheat) || 0,
         idli: Number(addForm.idli) || 0,
         samiya: Number(addForm.samiya) || 0,
+        sugar: Number(addForm.sugar) || 0,
         surf: Number(addForm.surf) || 0,
       };
       const { data } = await api.post('/stock', payload);
       setStock(data);
-      setAddForm({ rice: '', soaps: '', wheat: '', idli: '', samiya: '', surf: '' });
+      setAddForm({ rice: '', bigSoap: '', smallSoap: '', wheat: '', idli: '', samiya: '', sugar: '', surf: '' });
       toast.success('Stock updated successfully');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update stock');
@@ -63,12 +65,14 @@ export default function Stock() {
   };
 
   const items = [
-    { key: 'rice',     label: 'Rice',      unit: 'kg',   color: 'white',  threshold: 500, icon: '🍚' },
-    { key: 'soaps',    label: 'Soaps',     unit: 'pcs',  color: 'blue',   threshold: 100, icon: '🧼' },
-    { key: 'wheat',    label: 'Wheat',     unit: 'kg',   color: 'yellow', threshold: 50,  icon: '🌾' },
-    { key: 'idli',     label: 'Idli Rava', unit: 'kg',   color: 'gray',   threshold: 20,  icon: '🍚' },
-    { key: 'samiya',   label: 'Samiya',    unit: 'kg',   color: 'cyan',   threshold: 20,  icon: '🍜' },
-    { key: 'surf',     label: 'Surf',      unit: 'pkts', color: 'green',  threshold: 50,  icon: '🫧' },
+    { key: 'rice',      label: 'Rice',       unit: 'kg',   color: 'white',  threshold: 500, icon: '🍚' },
+    { key: 'bigSoap',   label: 'Big Soap',   unit: 'pcs',  color: 'blue',   threshold: 100, icon: '🧼' },
+    { key: 'smallSoap', label: 'Small Soap', unit: 'pcs',  color: 'blue',   threshold: 100, icon: '🧼' },
+    { key: 'wheat',     label: 'Wheat',      unit: 'kg',   color: 'yellow', threshold: 50,  icon: '🌾' },
+    { key: 'idli',      label: 'Idli Rava',  unit: 'kg',   color: 'gray',   threshold: 20,  icon: '🍚' },
+    { key: 'samiya',    label: 'Samiya',     unit: 'pkt',  color: 'cyan',   threshold: 20,  icon: '🍜' },
+    { key: 'sugar',     label: 'Sugar',      unit: 'kg',   color: 'white',  threshold: 20,  icon: '🧂' },
+    { key: 'surf',      label: 'Surf',       unit: 'pkt', color: 'green',  threshold: 50,  icon: '🫧' },
   ];
 
   const colorMap = {

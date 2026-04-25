@@ -37,7 +37,7 @@ router.get('/:cardNumber', protect, async (req, res) => {
 // POST /api/transactions - New distribution entry
 router.post('/', protect, async (req, res) => {
   try {
-    const { cardNumber, month, year, rice, soaps, wheat, idli, samiya, surf, receiverName, receiverPhoto } = req.body;
+    const { cardNumber, month, year, rice, bigSoap, smallSoap, wheat, idli, samiya, sugar, surf, receiverName, receiverPhoto } = req.body;
 
     // Validate card exists
     const card = await RationCard.findOne({ cardNumber, isActive: true });
@@ -47,12 +47,26 @@ router.post('/', protect, async (req, res) => {
     const stock = await Stock.findOne({ shopNumber: '0806015', month: parseInt(month), year: parseInt(year) });
     if (stock) {
       if ((stock.rice || 0) < (rice || 0)) return res.status(400).json({ message: `Insufficient rice stock. Available: ${stock.rice} kg` });
-      if ((stock.soaps || 0) < (soaps || 0)) return res.status(400).json({ message: `Insufficient soaps stock. Available: ${stock.soaps}` });
+      if ((stock.bigSoap || 0) < (bigSoap || 0)) return res.status(400).json({ message: `Insufficient big soap stock. Available: ${stock.bigSoap}` });
+      if ((stock.smallSoap || 0) < (smallSoap || 0)) return res.status(400).json({ message: `Insufficient small soap stock. Available: ${stock.smallSoap}` });
       if ((stock.wheat || 0) < (wheat || 0)) return res.status(400).json({ message: `Insufficient wheat stock. Available: ${stock.wheat} kg` });
       if ((stock.idli || 0) < (idli || 0)) return res.status(400).json({ message: `Insufficient idli rava stock. Available: ${stock.idli} kg` });
       if ((stock.samiya || 0) < (samiya || 0)) return res.status(400).json({ message: `Insufficient samiya stock. Available: ${stock.samiya} kg` });
+      if ((stock.sugar || 0) < (sugar || 0)) return res.status(400).json({ message: `Insufficient sugar stock. Available: ${stock.sugar} kg` });
       if ((stock.surf || 0) < (surf || 0)) return res.status(400).json({ message: `Insufficient surf stock. Available: ${stock.surf} pkts` });
     }
+
+    // Calculate total bill
+    const s = Number(sugar) || 0;
+    const sugarCost = Math.floor(s / 2) * 35 + (s % 2) * 17;
+    const totalBill = 
+      ((Number(bigSoap) || 0) * 20) +
+      ((Number(smallSoap) || 0) * 10) +
+      ((Number(wheat) || 0) * 50) +
+      ((Number(idli) || 0) * 50) +
+      ((Number(samiya) || 0) * 35) +
+      ((Number(surf) || 0) * 45) +
+      sugarCost;
 
     // Create transaction (will fail on unique index if duplicate)
     const transaction = await Transaction.create({
@@ -63,11 +77,14 @@ router.post('/', protect, async (req, res) => {
       year: parseInt(year),
       shopNumber: '0806015',
       rice: rice || 0,
-      soaps: soaps || 0,
+      bigSoap: bigSoap || 0,
+      smallSoap: smallSoap || 0,
       wheat: wheat || 0,
       idli: idli || 0,
       samiya: samiya || 0,
+      sugar: sugar || 0,
       surf: surf || 0,
+      totalBill,
       enteredBy: req.user?.name || req.user?.username || 'Operator',
       receiverName: receiverName || '',
       receiverPhoto: receiverPhoto || '',
@@ -77,10 +94,12 @@ router.post('/', protect, async (req, res) => {
     // Deduct from stock
     if (stock) {
       stock.rice = (stock.rice || 0) - (rice || 0);
-      stock.soaps = (stock.soaps || 0) - (soaps || 0);
+      stock.bigSoap = (stock.bigSoap || 0) - (bigSoap || 0);
+      stock.smallSoap = (stock.smallSoap || 0) - (smallSoap || 0);
       stock.wheat = (stock.wheat || 0) - (wheat || 0);
       stock.idli = (stock.idli || 0) - (idli || 0);
       stock.samiya = (stock.samiya || 0) - (samiya || 0);
+      stock.sugar = (stock.sugar || 0) - (sugar || 0);
       stock.surf = (stock.surf || 0) - (surf || 0);
       stock.lastUpdated = new Date();
       await stock.save();
@@ -102,7 +121,7 @@ router.delete('/:id', protect, async (req, res) => {
     if (!tx) return res.status(404).json({ message: 'Transaction not found' });
     // Restore stock
     await Stock.findOneAndUpdate({ shopNumber: '0806015', month: tx.month, year: tx.year }, {
-      $inc: { soaps: tx.soaps, wheat: tx.wheat, idli: tx.idli, samiya: tx.samiya, surf: tx.surf }
+      $inc: { rice: tx.rice, bigSoap: tx.bigSoap, smallSoap: tx.smallSoap, wheat: tx.wheat, idli: tx.idli, samiya: tx.samiya, sugar: tx.sugar, surf: tx.surf }
     });
     res.json({ message: 'Transaction deleted and stock restored' });
   } catch (error) {

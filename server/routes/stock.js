@@ -22,7 +22,7 @@ router.get('/', protect, async (req, res) => {
 // POST /api/stock - Add/update stock
 router.post('/', protect, async (req, res) => {
   try {
-    const { month, year, rice, soaps, wheat, idli, samiya, surf } = req.body;
+    const { month, year, rice, bigSoap, smallSoap, wheat, idli, samiya, sugar, surf } = req.body;
     const m = parseInt(month) || new Date().getMonth() + 1;
     const y = parseInt(year) || new Date().getFullYear();
 
@@ -32,10 +32,12 @@ router.post('/', protect, async (req, res) => {
     }
     
     if (rice !== undefined) stock.rice = (stock.rice || 0) + Number(rice);
-    if (soaps !== undefined) stock.soaps = (stock.soaps || 0) + Number(soaps);
+    if (bigSoap !== undefined) stock.bigSoap = (stock.bigSoap || 0) + Number(bigSoap);
+    if (smallSoap !== undefined) stock.smallSoap = (stock.smallSoap || 0) + Number(smallSoap);
     if (wheat !== undefined) stock.wheat = (stock.wheat || 0) + Number(wheat);
     if (idli !== undefined) stock.idli = (stock.idli || 0) + Number(idli);
     if (samiya !== undefined) stock.samiya = (stock.samiya || 0) + Number(samiya);
+    if (sugar !== undefined) stock.sugar = (stock.sugar || 0) + Number(sugar);
     if (surf !== undefined) stock.surf = (stock.surf || 0) + Number(surf);
     
     stock.lastUpdated = new Date();

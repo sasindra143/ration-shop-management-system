@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Truck, Package, AlertCircle, ShoppingBag, BarChart2, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Users, Truck, Package, AlertCircle, ShoppingBag, BarChart2, Calendar, CheckCircle, Clock, Search } from 'lucide-react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import api from '../services/api';
 
@@ -184,8 +184,12 @@ export default function Dashboard() {
             <p className="text-xl font-bold text-white">{stats.monthlyTotals?.rice || 0} kg</p>
           </div>
           <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
-            <p className="text-gray-400 text-sm">Soaps</p>
-            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.soaps || 0} pcs</p>
+            <p className="text-gray-400 text-sm">Big Soap</p>
+            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.bigSoap || 0} pcs</p>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
+            <p className="text-gray-400 text-sm">Small Soap</p>
+            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.smallSoap || 0} pcs</p>
           </div>
           <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
             <p className="text-gray-400 text-sm">Wheat</p>
@@ -197,11 +201,19 @@ export default function Dashboard() {
           </div>
           <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
             <p className="text-gray-400 text-sm">Samiya</p>
-            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.samiya || 0} kg</p>
+            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.samiya || 0} pkt</p>
+          </div>
+          <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
+            <p className="text-gray-400 text-sm">Sugar</p>
+            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.sugar || 0} kg</p>
           </div>
           <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
             <p className="text-gray-400 text-sm">Surf</p>
-            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.surf || 0} pkts</p>
+            <p className="text-xl font-bold text-white">{stats.monthlyTotals?.surf || 0} pkt</p>
+          </div>
+          <div className="bg-green-900/30 rounded-xl p-4 text-center border border-green-800/50 sm:col-span-2 md:col-span-1">
+            <p className="text-green-400 text-sm">Total Collection</p>
+            <p className="text-xl font-bold text-white">₹{stats.monthlyTotals?.totalBill || 0}</p>
           </div>
         </div>
       </div>
