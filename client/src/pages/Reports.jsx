@@ -37,18 +37,26 @@ export default function Reports() {
     }
   };
 
+  const filteredDetails = data?.details ? data.details.filter(t => 
+    (t.cardNumber && t.cardNumber.includes(searchTerm)) || 
+    (t.headOfFamily && t.headOfFamily.toLowerCase().includes(searchTerm.toLowerCase()))
+  ) : [];
+
   const generatePDF = () => {
-    if (!data?.details?.length) return;
+    if (!filteredDetails.length) {
+      toast.error('No records to download');
+      return;
+    }
     const doc = new jsPDF('landscape');
     const monthName = MONTHS[parsedMonth];
     doc.setFontSize(18);
     doc.text('Government Ration Shop - Distribution Report', 14, 18);
     doc.setFontSize(11);
     doc.text(`Shop: 0806015 | Village: Sunkesula | Period: ${monthName} ${parsedYear}`, 14, 28);
-    doc.text(`Total Families Served: ${data.summary?.totalCards || 0}`, 14, 36);
+    doc.text(`Total Families Exported: ${filteredDetails.length}`, 14, 36);
 
     const tableColumn = ['Date', 'Card No', 'Head of Family', 'Units', 'Rice', 'Big Soap', 'Small Soap', 'Wheat', 'Idli', 'Samiya', 'Sugar', 'Surf', 'Total Bill', 'Receiver'];
-    const tableRows = data.details.map(t => [
+    const tableRows = filteredDetails.map(t => [
       new Date(t.date).toLocaleDateString('en-IN'),
       t.cardNumber,
       t.headOfFamily,
@@ -213,12 +221,7 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {data.details
-                  .filter(t => 
-                    (t.cardNumber && t.cardNumber.includes(searchTerm)) || 
-                    (t.headOfFamily && t.headOfFamily.toLowerCase().includes(searchTerm.toLowerCase()))
-                  )
-                  .map(t => (
+                {filteredDetails.map(t => (
                   <tr key={t._id}>
                     <td className="whitespace-nowrap text-xs">
                       {new Date(t.date).toLocaleDateString('en-IN')}
