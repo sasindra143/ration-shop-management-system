@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+let baseUrl = import.meta.env.VITE_API_URL || 'https://ration-shop-management-system.onrender.com/api';
+if (!baseUrl.endsWith('/api')) {
+  baseUrl = baseUrl.replace(/\/$/, '') + '/api';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://ration-shop-management-system.onrender.com/api',
+  baseURL: baseUrl,
   headers: { 'Content-Type': 'application/json' },
 });
 
